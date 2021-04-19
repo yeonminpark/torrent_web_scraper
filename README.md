@@ -31,4 +31,6 @@ torrent_web_scraper를 설정해두면, 토렌트 다운로드를 위해 토렌�
 
 5. 다운로드 상태가 100.0% 토렌트 리스트에서 제거합니다. // 원작자 분이 주석 처리해놓은 것 풀었습니다. isFinished > percentDone으로 조건 변경
 
+6. 혹시 Original error was: libf77blas.so.3: cannot open shared object file: No such file or directory 발생하면 $sudo apt-get install libatlas-base-dev
+
 
