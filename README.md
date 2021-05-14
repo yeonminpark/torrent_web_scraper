@@ -33,4 +33,7 @@ torrent_web_scraper를 설정해두면, 토렌트 다운로드를 위해 토렌�
 
 6. 혹시 Original error was: libf77blas.so.3: cannot open shared object file: No such file or directory 발생하면 $sudo apt-get install libatlas-base-dev
 
+7. F1rst라는 릴그룹이 생겨서 인지 안 받아지는 게 생겨서 릴그룹 검색을 pass 하도록 했습니다. 안받아지는 것보다는 두개 받는 쪽을 선택했어요.
+
+8. 윈도우에서 안되서 수정을 하고 멀티코어 적용했어요. 현재 라즈베리파이3(주 사용환경)랑 윈도우10 확인되었습니다.
 
