@@ -18,7 +18,7 @@ class TransmissionDelegate:
         self.__media_folder = media_folder
         _ = self.__rpc_get_session()
 
-        if _ == None:
+        if _ is None:
             print("Failed to connect transmission - %s:%s" %
                   (self.__ip, self.__port))
             sys.exit()

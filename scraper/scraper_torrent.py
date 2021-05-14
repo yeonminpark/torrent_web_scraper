@@ -112,15 +112,15 @@ class ScraperTorrent():
     def parse_magnet_from_page_url(self, url):
         bs_obj = self.web_delegate.get_web_data(url)
         magnet = None
-        if not bs_obj == None:
+        if not bs_obj is None:
             magnet_item = bs_obj.find('a', href=re.compile(".*magnet.*"))
-            if not magnet_item == None:
+            if not magnet_item is None:
                 magnet = magnet_item.get('href')
         return magnet
 
     def checking_sites(self, goodsites):
         categories = self.aggregation_categories(goodsites)
-        if (categories == None) or (self.__web_delegate.check_url_alive(self.__goodsite) == False):
+        if (categories == []) or (self.__web_delegate.check_url_alive(self.__goodsite) == False):
             self.__torrent_sites_delegate.add_failsite_to_badsites(
                 goodsites)
         return goodsites
@@ -135,7 +135,7 @@ class ScraperTorrent():
         except:
             pass
 
-        if self.__scraper_config.get_config_scraper(self.__sitename, 'categories') == None:
+        if self.__scraper_config.get_config_scraper(self.__sitename, 'categories') is None:
             try:
                 soup = self.web_delegate.get_web_data(goodsite)
                 categories_list = ['예능', '드라마', '영화', '시사', '방송', 'TV프로', '다큐']
@@ -194,7 +194,7 @@ class ScraperTorrent():
                     if not matched_name:
                         continue
                     magnet = self.parse_magnet_from_page_url(href)
-                    if magnet == None:
+                    if magnet is None:
                         continue
                     magnet_info = MagnetInfo(title, magnet, matched_name)
                     ret = self.__transmission_delegate.add_magnet_transmission_remote(

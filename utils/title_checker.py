@@ -64,7 +64,7 @@ class TitleChecker:
     def __validate_resolution(board_title, candidate_item):
         """board_title에서 resolution을 검색해야 하므로, 해당하는
         item 정보(=class)가 필요함"""
-        if candidate_item.resolutions[0] == None:
+        if candidate_item.resolutions[0] is None:
             return True
 
         for temp in candidate_item.resolutions:
@@ -76,7 +76,7 @@ class TitleChecker:
     def __validate_release(board_title, candidate_item):
         """board_title에서 release을 검색해야 하므로, 해당하는
         item 정보(=class)가 필요함"""
-        if candidate_item.releases[0] == None:
+        if candidate_item.releases[0] is None:
             return True
 
         for temp in candidate_item.releases:
