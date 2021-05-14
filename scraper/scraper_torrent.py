@@ -78,7 +78,7 @@ class ScraperTorrent():
         return good_sites
 
     def parse_page_data(self, url):
-        if self.__scraper_config.get_config_scraper(self.__sitename, 'find1') != None:
+        if self.__scraper_config.get_config_scraper(self.__sitename, 'find1') is not None:
             find1, find2, findall1, findall2, findre = self.__scraper_config.get_beautifulsoup_ingredients(
                 self.__sitename)
 

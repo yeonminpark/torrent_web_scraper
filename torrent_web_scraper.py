@@ -35,7 +35,7 @@ def main():
     for i, goodsite in enumerate(goodsites):
         categories, sitename = scraper.aggregation_categories(goodsite)
         print(f"Scraper for {sitename.upper()}")
-        if categories != None:
+        if categories is not None:
             scraper.execute_scraper(categories)
         if i == 3:
             break

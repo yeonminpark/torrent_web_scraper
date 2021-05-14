@@ -48,11 +48,11 @@ class TransmissionDelegate:
         return response
 
     def add_magnet_transmission_remote(self, magnet_info):
-        if self.__history_delegate != None:
+        if self.__history_delegate is not None:
             if self.__history_delegate.check_magnet_history(magnet_info.magnet):
                 return False
 
-        if self.__media_folder != None:
+        if self.__media_folder is not None:
             tvtitle = ' '.join(magnet_info.matched_name.title)
             tvtitle_folder = os.path.join(self.__media_folder, tvtitle)
             try:
@@ -92,7 +92,7 @@ class TransmissionDelegate:
         else:
             return False
 
-        if self.__history_delegate != None:
+        if self.__history_delegate is not None:
             self.__history_delegate.add_magnet_info_to_history(
                 magnet_info.get_list())
             return True
