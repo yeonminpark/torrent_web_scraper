@@ -18,7 +18,7 @@ class TransmissionDelegate:
         self.__media_folder = media_folder
         _ = self.__rpc_get_session()
 
-        if _ is None:
+        if _ == None:
             print("Failed to connect transmission - %s:%s" %
                   (self.__ip, self.__port))
             sys.exit()
@@ -48,7 +48,7 @@ class TransmissionDelegate:
         return response
 
     def add_magnet_transmission_remote(self, magnet_info):
-        if self.__history_delegate is not None:
+        if self.__history_delegate != None:
             if self.__history_delegate.check_magnet_history(magnet_info.magnet):
                 return False
 
@@ -61,13 +61,22 @@ class TransmissionDelegate:
             except Exception as e:
                 print(e)
 
-            payload = {
-                "arguments": {
-                    "filename": magnet_info.magnet,
-                    "download-dir": tvtitle_folder
-                },
-                "method": "torrent-add"
-            }
+            if os.name == 'nt':
+                payload = {
+                    "arguments": {
+                        "filename": magnet_info.magnet,
+                        "download-dir": tvtitle_folder.replace('/', '\\')
+                    },
+                    "method": "torrent-add"
+                }
+            else:
+                payload = {
+                    "arguments": {
+                        "filename": magnet_info.magnet,
+                        "download-dir": tvtitle_folder
+                    },
+                    "method": "torrent-add"
+                }
 
         else:
             payload = {
@@ -83,7 +92,7 @@ class TransmissionDelegate:
         else:
             return False
 
-        if self.__history_delegate is not None:
+        if self.__history_delegate != None:
             self.__history_delegate.add_magnet_info_to_history(
                 magnet_info.get_list())
             return True

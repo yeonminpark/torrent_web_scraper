@@ -1,13 +1,15 @@
 import os
 
+
 class Item:
     def __init__(self, info):
         self.title = info.lower().strip().split(" ")
         self.resolutions = ['720']
-        self.releases = ['NEXT']
+        self.releases = [None]
 
     def __repr__(self):
         return "{} with {} from {}".format(" ".join(self.title), self.resolutions, self.releases)
+
 
 class TitleChecker:
     def __init__(self, media_folder):
@@ -62,7 +64,7 @@ class TitleChecker:
     def __validate_resolution(board_title, candidate_item):
         """board_title에서 resolution을 검색해야 하므로, 해당하는
         item 정보(=class)가 필요함"""
-        if candidate_item.resolutions[0] is None:
+        if candidate_item.resolutions[0] == None:
             return True
 
         for temp in candidate_item.resolutions:
@@ -74,7 +76,7 @@ class TitleChecker:
     def __validate_release(board_title, candidate_item):
         """board_title에서 release을 검색해야 하므로, 해당하는
         item 정보(=class)가 필요함"""
-        if candidate_item.releases[0] is None:
+        if candidate_item.releases[0] == None:
             return True
 
         for temp in candidate_item.releases:

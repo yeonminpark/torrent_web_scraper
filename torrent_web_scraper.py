@@ -6,6 +6,7 @@ pages_to_scrap = int(sys.argv[1]) if len(sys.argv) >= 2 else 3
 
 
 def main():
+
     root_path = os.path.abspath(os.path.dirname(__file__)) + '/'
     local_machine_status_file = root_path + \
         'local_config/local_machine_configuration.json'
@@ -16,7 +17,7 @@ def main():
                              local_machine_history_file, pages_to_scrap)
 
     print("\n{}".format(time.ctime()))
-    goodsites = scraper.collect_goodsites()
+    goodsites = scraper.good_sites()
 
 # 사용 가능한 토렌트 사이트가 5개 미만이 될 다시 토렌트 사이트 검색
 # 간단히 ./local_config/badsites.csv 삭제해서 토렌트 사이트 재검색 할 수 있음
@@ -24,19 +25,22 @@ def main():
         print("Re-collecting torrent sites")
         if os.path.exists(local_machine_badsites_file) == True:
             os.remove(local_machine_badsites_file)
-            goodsites = scraper.collect_goodsites()
+            goodsites = scraper.good_sites()
         for goodsite in goodsites:
-            print("Checking {}".format(goodsite))
+            print(f"Checking {goodsite}")
             scraper.checking_sites(goodsite)
-        goodsites = scraper.collect_goodsites()
+        goodsites = scraper.good_sites()
 
+    # start = int(time.time())
     for i, goodsite in enumerate(goodsites):
-        print("Scraper for {}".format(goodsite))
-        categories = scraper.aggregation_categories(goodsite)
-        if categories is not None:
+        categories, sitename = scraper.aggregation_categories(goodsite)
+        print(f"Scraper for {sitename.upper()}")
+        if categories != None:
             scraper.execute_scraper(categories)
-        if i == 1:
+        if i == 3:
             break
+    # end = int(time.time())
+    # print(f"{end-start}")
 
     scraper.end()
     sys.exit()

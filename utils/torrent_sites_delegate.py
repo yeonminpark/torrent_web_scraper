@@ -10,26 +10,34 @@ class TorrentSitesDelegate:
         self.__web_delegate = web_delegate
         self.__badsites_file = local_machine_badsites_file
 
-    def collect_goodsites(self):
-        anchors = []
-        badsites = []
+    def google_torrentsites(self):
+        torrent_sites = []
         query = "토렌트 순위"
 
         for g in search(query, tld='co.kr', num=10, stop=3):
-            try:
-                soup = self.__web_delegate.get_web_data(g)
-                exclude = 'http://jaewook.net', 'https://lsrank.com', 'https://twitter.com', 'https://ps.devbj.com', \
-                    'https://torrentrank.net', 'https://github.com', 'https://www.torrentdia', 'https://www.instagram.com', \
-                    'https://xn', 'http://www.xn', 'http://xn'
-                for anchor in soup.find_all('a'):
-                    href = anchor.get('href')
-                    if href.startswith('http') and not href.startswith(exclude) and not len(href) > 35:
-                        if not href.endswith('/'):
-                            href = href + '/'
-                        anchors.append(href)
-            except:
-                pass
+            torrent_sites.append(g)
+        return torrent_sites
 
+    def check_goodsites(self, torrent_site):
+        candidate_sites = []
+
+        try:
+            soup = self.__web_delegate.get_web_data(torrent_site)
+            exclude = 'http://jaewook.net', 'https://lsrank.com', 'https://twitter.com', 'https://ps.devbj.com', \
+                'https://torrentrank.net', 'https://github.com', 'https://www.torrentdia', 'https://www.instagram.com', \
+                'https://xn', 'http://www.xn', 'http://xn'
+            for anchor in soup.find_all('a'):
+                href = anchor.get('href')
+                if href.startswith('http') and not href.startswith(exclude) and not len(href) > 35:
+                    if not href.endswith('/'):
+                        href = href + '/'
+                    candidate_sites.append(href)
+        except:
+            pass
+        return candidate_sites
+
+    def remove_badsites(self, anchors):
+        badsites = []
         if os.path.exists(self.__badsites_file) == True:
             with open(self.__badsites_file, encoding='utf-8',  newline='') as f:
                 for row in csv.reader(f):
@@ -37,6 +45,7 @@ class TorrentSitesDelegate:
         else:
             badsites = []
         goodsites = list(set(anchors)-set(badsites))
+        print(f"{len(goodsites)} Torrent sites")
         return goodsites
 
     def add_failsite_to_badsites(self, goodsite):

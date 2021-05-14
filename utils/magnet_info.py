@@ -1,9 +1,10 @@
 from datetime import datetime as dtime
 
+
 class MagnetInfo():
     def __init__(self, title, magnet, matched_name):
         self.create_time = dtime.now().strftime("%Y-%m-%d %H:%M:%S")
-        self.title = title
+        self.title = " ".join(title.split())
         self.magnet = magnet
         self.matched_name = matched_name
 

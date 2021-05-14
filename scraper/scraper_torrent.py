@@ -10,7 +10,9 @@ from scraper.board_item_iterator import BoardItemIterator
 from scraper.board_page_iterator import BoardPageIterator
 from scraper.system_config import SystemConfig
 from scraper.scraper_config import ScraperConfig
-
+from multiprocessing import Pool
+from multiprocessing import Process
+import multiprocessing as mp
 import re
 
 
@@ -43,13 +45,12 @@ class ScraperTorrent():
             media_folder, self.__title_checker.tvlist())
         self.__sitename = ""
         self.__goodsite = ""
-        self.__name_list = []
+        self.__num_cores = mp.cpu_count()
 
     @property
     def torrent_sites_delegate(self):
         return self.__torrent_sites_delegate
 
-    @property
     def filemove(self):
         return self.__file_move
 
@@ -65,8 +66,19 @@ class ScraperTorrent():
         '''각 site가 살아있는지 확인'''
         return self.web_delegate.check_url_alive(url)
 
+    def good_sites(self):
+        torrent_sites = self.__torrent_sites_delegate.google_torrentsites()
+        with Pool(self.__num_cores) as p:
+            torrent_candidates = sum(
+                p.map(self.__torrent_sites_delegate.check_goodsites, torrent_sites), [])
+            p.close()
+            p.join()
+        good_sites = self.__torrent_sites_delegate.remove_badsites(
+            torrent_candidates)
+        return good_sites
+
     def parse_page_data(self, url):
-        if self.__scraper_config.get_config_scraper(self.__sitename, 'find1') is not None:
+        if self.__scraper_config.get_config_scraper(self.__sitename, 'find1') != None:
             find1, find2, findall1, findall2, findre = self.__scraper_config.get_beautifulsoup_ingredients(
                 self.__sitename)
 
@@ -81,7 +93,6 @@ class ScraperTorrent():
                 if not href.startswith('http'):
                     href = self.__goodsite[:-1] + a_tag['href']
                 name_list.append([title, href])
-            self.__name_list.append(name_list[3][0])
             return name_list
 
         else:
@@ -96,7 +107,6 @@ class ScraperTorrent():
                 if not href.startswith('http'):
                     href = self.__goodsite[:-1] + a_tag['href']
                 name_list.append([title, href])
-            self.__name_list.append(name_list[3][0])
             return name_list
 
     def parse_magnet_from_page_url(self, url):
@@ -108,14 +118,12 @@ class ScraperTorrent():
                 magnet = magnet_item.get('href')
         return magnet
 
-    def collect_goodsites(self):
-        return self.__torrent_sites_delegate.collect_goodsites()
-
-    def checking_sites(self, goodsite):
-        categories = self.aggregation_categories(goodsite)
-        if (len(categories) is 0) or (self.__web_delegate.check_url_alive(self.__goodsite) == False):
-            self.__torrent_sites_delegate.add_failsite_to_badsites(goodsite)
-        return
+    def checking_sites(self, goodsites):
+        categories = self.aggregation_categories(goodsites)
+        if (categories == None) or (self.__web_delegate.check_url_alive(self.__goodsite) == False):
+            self.__torrent_sites_delegate.add_failsite_to_badsites(
+                goodsites)
+        return goodsites
 
     def aggregation_categories(self, goodsite):
         self.__goodsite = goodsite
@@ -127,7 +135,7 @@ class ScraperTorrent():
         except:
             pass
 
-        if self.__scraper_config.get_config_scraper(self.__sitename, 'categories') is None:
+        if self.__scraper_config.get_config_scraper(self.__sitename, 'categories') == None:
             try:
                 soup = self.web_delegate.get_web_data(goodsite)
                 categories_list = ['예능', '드라마', '영화', '시사', '방송', 'TV프로', '다큐']
@@ -139,7 +147,7 @@ class ScraperTorrent():
                                 h = re.compile(
                                     "bbs[/]board[.]php[?]bo[_]table[=](?!basic$|review$|test$|board[0-9]$)[a-z]+[0-9]?$")
                                 h_tail = h.findall(href)
-                                if h_tail is not []:
+                                if h_tail != []:
                                     href = goodsite + h_tail[0] + '&page='
                                     categories.append(href)
                     except:
@@ -156,23 +164,27 @@ class ScraperTorrent():
                 categories.append(href)
 
         categories = list(set(categories))
-        return categories
+        return categories, self.__sitename
 
     def execute_scraper(self, categories):
-        self.__name_list = []
-        for category in categories:
-            self.__execute_scraper_for_category(category)
-        # print(self.__name_list)
-        if self.__name_list == []:
-            self.__torrent_sites_delegate.add_failsite_to_badsites(
-                self.__goodsite)
+        with Pool(self.__num_cores) as p:
+            working_or_not = sum(p.map(self.execute_scraper_for_category,
+                                       categories), [])
+            p.close()
+            p.join()
 
-    def __execute_scraper_for_category(self, category):
+            # print(working_or_not)
+            if working_or_not == []:
+                self.__torrent_sites_delegate.add_failsite_to_badsites(
+                    self.__goodsite)
+
+    def execute_scraper_for_category(self, category):
+        working_or_not = []
         page_iterator = BoardPageIterator(category, 1, self.__pages_to_scrap)
-
         try:
             for page in page_iterator:
                 board_list = self.parse_page_data(page)
+                working_or_not.append(board_list[3][0])
                 item_iterator = BoardItemIterator(board_list)
 
                 '''한 page 내의 list item을  iter 순회'''
@@ -182,7 +194,7 @@ class ScraperTorrent():
                     if not matched_name:
                         continue
                     magnet = self.parse_magnet_from_page_url(href)
-                    if magnet is None:
+                    if magnet == None:
                         continue
                     magnet_info = MagnetInfo(title, magnet, matched_name)
                     ret = self.__transmission_delegate.add_magnet_transmission_remote(
@@ -191,6 +203,7 @@ class ScraperTorrent():
                         continue
         except:
             pass
+        return working_or_not
 
     def end(self):
         self.__file_move.arrange_files()
